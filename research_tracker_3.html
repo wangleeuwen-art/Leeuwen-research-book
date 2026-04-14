@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Research"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#040d1a"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230a1930'/%3E%3Ctext x='256' y='350' font-size='300' text-anchor='middle' fill='%2393c5fd' font-family='Georgia,serif' font-weight='bold'%3ER%3C/text%3E%3C/svg%3E"/>
+<title>Equity Research</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#f4f6f9;color:#1a1a2e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;min-height:100dvh}
+input,textarea,select{font-size:16px!important;font-family:inherit}
+textarea{resize:vertical}
+::-webkit-scrollbar{display:none}
+button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit}
+button:disabled{opacity:.4;pointer-events:none}
+
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --surface2:#f0f4fa;
+  --navy:#0d2147; --mid:#1e3a6e; --nv:#2563eb;
+  --br:#3b82f6; --pl:#dbeafe; --pl2:#eff6ff;
+  --s3:#374151; --s4:#6b7280; --s5:#9ca3af; --s6:#d1d5db;
+  --ok-bg:#f0fdf4; --ok-bd:#86efac; --ok-t:#15803d;
+  --no-bg:#fef2f2; --no-bd:#fca5a5; --no-t:#dc2626;
+  --amber-bg:#fffbeb; --amber-bd:#fcd34d; --amber-t:#d97706;
+}
+
+.safe-top{padding-top:max(env(safe-area-inset-top),14px)}
+.safe-bot{padding-bottom:max(env(safe-area-inset-bottom),20px)}
+.safe-x{padding-left:max(env(safe-area-inset-left),16px);padding-right:max(env(safe-area-inset-right),16px)}
+
+.page{min-height:100dvh;background:var(--bg)}
+.top-bar{background:#fff;border-bottom:1px solid var(--s6);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.top-bar.sticky{position:sticky;top:0;z-index:10}
+
+.wrap{max-width:576px;margin:0 auto}
+.row{display:flex;align-items:center}
+.row.sb{justify-content:space-between}
+.row.gap{gap:8px}
+.row.base{align-items:baseline}
+.col{display:flex;flex-direction:column}
+.f1{flex:1}.ml-a{margin-left:auto}
+
+.stack{display:flex;flex-direction:column;gap:12px}
+.stack8{display:flex;flex-direction:column;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+.card{background:#fff;border-radius:14px;border:1px solid var(--s6);overflow:hidden;transition:border-color .15s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card.upcoming{border-color:var(--br);border-style:dashed}
+.card-head{padding:11px 14px;display:flex;align-items:center;justify-content:space-between;background:#f8faff;border-bottom:1px solid var(--s6)}
+.card-head.upcoming{background:var(--pl2)}
+.card-body{padding:12px 14px}
+
+.chip{background:var(--surface2);border:1px solid var(--s6);border-radius:8px;padding:9px 11px}
+.chip.ok{background:var(--ok-bg);border-color:var(--ok-bd)}
+.chip.no{background:var(--no-bg);border-color:var(--no-bd)}
+.chip .cl{font-size:10px;color:var(--s4);margin-bottom:3px;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.chip .cv{font-family:ui-monospace,monospace;font-size:13px;font-weight:700;line-height:1.2;color:var(--s3)}
+.chip.ok .cv{color:var(--ok-t)}
+.chip.no .cv{color:var(--no-t)}
+
+.rxn-tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px}
+.rxn-pos{background:var(--ok-bg);color:var(--ok-t);border:1px solid var(--ok-bd)}
+.rxn-neg{background:var(--no-bg);color:var(--no-t);border:1px solid var(--no-bd)}
+.rxn-neu{background:var(--pl2);color:var(--mid);border:1px solid var(--pl)}
+
+.btn{border-radius:9px;font-weight:700;transition:.15s;padding:9px 16px;font-size:13px}
+.btn.ac{background:var(--nv);color:#fff}
+.btn.ac:hover{background:var(--mid)}
+.btn.ghost{border:1px solid var(--s6);color:var(--s4);background:#fff}
+.btn.ghost:hover{border-color:var(--br);color:var(--nv)}
+.btn.sm{padding:6px 12px;font-size:12px;border-radius:7px}
+.btn.full{width:100%}
+.btn-icon{font-size:17px;padding:4px 7px;color:var(--s4);transition:.15s;border-radius:6px}
+.btn-icon:hover{color:var(--nv)}
+.btn-refresh{background:#fff;border:1px solid var(--s6);color:var(--nv);border-radius:7px;padding:5px 11px;font-size:12px;font-family:ui-monospace,monospace;transition:.15s}
+.btn-refresh:hover{border-color:var(--br)}
+.btn-expand{width:100%;padding-top:9px;margin-top:4px;border-top:1px solid var(--s6);font-size:11px;color:var(--s4);display:flex;align-items:center;justify-content:center;gap:5px;transition:.15s;letter-spacing:.04em;text-transform:uppercase}
+.btn-expand:hover{color:var(--nv)}
+.btn-edit{background:#fff;border:1px solid var(--s6);color:var(--s4);border-radius:7px;padding:5px 11px;font-size:12px;transition:.15s;margin-top:12px}
+.btn-edit:hover{border-color:var(--br);color:var(--nv)}
+
+.inp{width:100%;background:#fff;border:1px solid var(--s6);color:var(--s3);border-radius:9px;padding:10px 12px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--br);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.inp::placeholder{color:var(--s5)}
+.inp.area{resize:vertical}
+.lbl{font-size:11px;color:var(--s4);display:block;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.field{margin-bottom:12px}
+
+.note-lbl{font-size:10px;font-weight:700;color:var(--nv);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;opacity:.7}
+.note-txt{font-size:13px;color:var(--s3);line-height:1.7}
+.note-blk{margin-bottom:14px}
+
+/* thesis box */
+.thesis-card{background:#fff;border:1px solid var(--s6);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:4px}
+.thesis-head{padding:11px 14px;background:#f0f4fa;border-bottom:1px solid var(--s6);display:flex;align-items:center;justify-content:space-between}
+.thesis-label{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.1em}
+.thesis-body{padding:14px;font-size:13px;color:var(--s3);line-height:1.75;white-space:pre-wrap}
+.thesis-body.empty{color:var(--s5);font-style:italic}
+.thesis-area{width:100%;background:#fff;border:none;color:var(--s3);padding:14px;font-size:13px;line-height:1.75;outline:none;resize:vertical;min-height:120px;font-family:inherit}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:600px){.overlay{align-items:center}}
+.sheet{background:#fff;border:1px solid var(--s6);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:92dvh;overflow-y:auto;box-shadow:0 -4px 24px rgba(0,0,0,.1)}
+@media(min-width:600px){.sheet{border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.15)}}
+.sheet-hdr{display:flex;align-items:center;justify-content:space-between;padding:17px 20px 12px;border-bottom:1px solid var(--s6)}
+.sheet-body{padding:16px 20px 28px}
+.sheet-close{font-size:22px;color:var(--s4);line-height:1;padding:2px 6px}
+.sheet-close:hover{color:var(--s3)}
+
+.ticker-card{background:#fff;border:1px solid var(--s6);border-radius:14px;padding:16px;text-align:left;width:100%;display:block;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.ticker-card:hover{border-color:var(--br);box-shadow:0 2px 8px rgba(37,99,235,.1)}
+
+.brand-label{font-size:10px;color:var(--nv);letter-spacing:.18em;text-transform:uppercase;opacity:.6;margin-bottom:2px;font-family:ui-monospace,monospace}
+.brand-title{font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.bc-back{font-size:13px;color:var(--nv);font-family:ui-monospace,monospace;letter-spacing:.04em}
+.bc-sep{color:var(--s6);font-size:14px;margin:0 4px}
+.bc-sym{font-size:14px;font-weight:700;color:var(--navy)}
+
+.live-price{font-family:ui-monospace,monospace;font-weight:700;font-size:19px;color:var(--navy)}
+.chg-pos{font-family:ui-monospace,monospace;font-size:13px;font-weight:700;color:var(--ok-t);margin-left:6px}
+.chg-neg{font-family:ui-monospace,monospace;font-size:13px;font-weight:700;color:var(--no-t);margin-left:6px}
+.live-sub{font-size:11px;color:var(--s4);margin-top:1px}
+
+.news-card{background:#fff;border:1px solid var(--s6);border-radius:12px;padding:13px 15px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.news-lbl{font-size:10px;color:var(--nv);letter-spacing:.18em;text-transform:uppercase;margin-bottom:9px;font-family:ui-monospace,monospace}
+.news-item{font-size:12px;color:var(--s3);padding:7px 0;border-bottom:1px solid var(--s6);line-height:1.55}
+.news-item:last-child{border-bottom:none}
+
+.notes-area{border-top:1px solid var(--s6);background:#fafbfd;padding:14px}
+
+.edit-area{width:100%;background:#fff;border:1px solid var(--s6);color:var(--s3);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.65;outline:none;transition:border-color .15s;font-family:inherit}
+.edit-area:focus{border-color:var(--br);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+
+.pulse{animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fade{animation:fi .18s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.mt1{margin-top:4px}.mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}
+.mb1{margin-bottom:4px}.mb2{margin-bottom:8px}.mb3{margin-bottom:12px}.mb4{margin-bottom:16px}
+.pt2{padding-top:8px}.pb3{padding-bottom:12px}
+.gap2{gap:8px}.gap3{gap:12px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect} = React;
+
+const SEED={
+  tickerOrder:["FIG","DOCS","HIMS","NOW","TEAM","WDAY","ADBE"],
+  tickers:{
+    FIG:{company:"Figma Inc.",sector:"Software / Internet",exchange:"NASDAQ",quarters:[
+      {id:"fig-q2-fy25",label:"Q2 FY25",date:"Aug 2025",rev_est:232,rev_act:250,eps_est:0.05,eps_act:0.13,
+       metrics:[{l:"NDR ($10K+)",v:"129%"},{l:"Gross Margin",v:"90%"},{l:"Op Margin",v:"17%"}],
+       ah:"-13.7%",d1o:"~$102",d1c:"~$100",net:"~-13%",
+       pre:"Stock ~$120 post-IPO mania. Market pricing FIG as next-gen design monopoly. Lock-up expiration not fully discounted. AI concern not yet primary narrative. Expectations extremely elevated.",
+       said:"Revenue beat meaningfully (+7.8%). NDR 129% — healthy. Guidance in-line, not above. Lock-up unlock announced simultaneously. Nothing addressed AI displacement risk.",
+       why:"Fell 13.7% AH — not on earnings but on simultaneous lock-up unlock announcement. Insider supply shock overwhelmed strong results. Multiple de-rating began.",
+       upd:"Thesis unchanged — business executing. But monopoly premium started compressing. AI disruption narrative not yet dominant."},
+      {id:"fig-q3-fy25",label:"Q3 FY25",date:"Nov 5, 2025",rev_est:260,rev_act:274,eps_est:-1.58,eps_act:0.10,
+       metrics:[{l:"NDR ($10K+)",v:"131%"},{l:"Gross Margin",v:"86%"},{l:"Op Margin",v:"12%"}],
+       ah:"Flat",d1o:"~$36",d1c:"~$36",net:"~0%",
+       pre:"Stock $35-40 — down ~70% from ATH. AI disruption narrative dominant. Market pricing structural seat compression risk. Bears positioned.",
+       said:"Revenue beat again. NDR improved 129%→131%. Crossed $1B ARR. But nothing addressed whether AI would erode seat demand in 2-3 years.",
+       why:"Flat / -1%. Market not trading the quarter. AI structural question unanswered. Neither side got new information.",
+       upd:"De-rating stabilized but not reversed. Market in show-me mode — waiting for NDR data to show AI impact."},
+      {id:"fig-q4-fy25",label:"Q4 FY25",date:"Feb 18, 2026",rev_est:293,rev_act:304,eps_est:0.07,eps_act:0.08,
+       metrics:[{l:"NDR ($10K+)",v:"136% ↑"},{l:"Gross Margin",v:"86%"},{l:"2026 Guide",v:"$1.37B"}],
+       ah:"+15%",d1o:"~$24",d1c:"~$22",net:"~+5%",
+       pre:"Stock near $20-22, close to 52-week lows. Extreme AI disruption narrative. Multiple compressed toward distressed levels.",
+       said:"Revenue beat (+3.7%). NDR re-accelerated 131%→136%. 2026 guide $1.37B vs $1.29B est — 6% above consensus.",
+       why:"+15% AH. NDR acceleration was the specific signal bears needed to counter. Guide beat forced short covering.",
+       upd:"First quarter where data spoke to the structural question. NDR re-accelerating = AI not yet visible in seat economics."},
+      {id:"fig-q1-fy26",label:"Q1 FY26",date:"May 14, 2026",rev_est:316,rev_act:null,eps_est:0.07,eps_act:null,
+       metrics:[{l:"NDR ($10K+)",v:"TBD"},{l:"Gross Margin",v:"TBD"},{l:"AI Credit Rev",v:"TBD"}],
+       ah:null,d1o:null,d1c:null,net:null,pre:"",said:"",why:"",upd:""}
+    ]},
+    HIMS:{company:"Hims & Hers Health Inc.",sector:"Consumer Telehealth",exchange:"NYSE",quarters:[
+      {id:"hims-q2-23",label:"Q2 2023",date:"Aug 2023",rev_est:194,rev_act:208,eps_est:-0.09,eps_act:-0.04,
+       metrics:[{l:"Subscribers",v:"1.27M"},{l:"EBITDA Margin",v:"~3%"},{l:"Short Interest",v:"~25%"}],
+       ah:"+5%",d1o:"~$7.50",d1c:"~$7.20",net:"~+3%",
+       pre:"Stock ~$6-7. SPAC hangover. Bears frame HIMS as promotional DTC brand with no moat — generic ED and hair loss pills with high CAC, no profitability, and no defensible IP. Consensus lazy short: shorting it requires no work, it just looks like a bad business.",
+       said:"Revenue $208M — beat. Subscribers growing fast. EBITDA turning less negative. Business is executing well by any operational metric. But guidance language is soft and no clear profitability timeline.",
+       why:"+5% small pop — short covering on the beat but no conviction re-rating. Bears didn't need to cover in size because the core thesis (no profits, no moat) wasn't addressed by the quarter.",
+       upd:"Revenue growth is undeniably real but the market still treats it as a promotional business that buys subscribers cheaply and loses them. The lazy short thesis is intact because nothing in the quarter proved durable unit economics."},
+      {id:"hims-q3-23",label:"Q3 2023",date:"Nov 2023",rev_est:217,rev_act:227,eps_est:-0.08,eps_act:-0.03,
+       metrics:[{l:"Subscribers",v:"1.34M"},{l:"EBITDA Margin",v:"~4%"},{l:"Short Interest",v:"~25%"}],
+       ah:"+8%",d1o:"~$8.80",d1c:"~$8.60",net:"~+5%",
+       pre:"Stock ~$8-9. Some incremental bulls building positions on the growth trajectory. Short interest still elevated. Bears pointing to skin care losses and lack of operating leverage. Market treating HIMS as a promotional engine not a healthcare platform.",
+       said:"Revenue $227M +39% YoY — beat. EBITDA losses narrowing meaningfully. Subscriber growth accelerating. Hair loss and sexual health scaling. Guidance raised for Q4. First signals of operating leverage actually appearing.",
+       why:"+8% AH — better short covering but still no re-rating. Shorts not rushing to cover because the profitability milestone hasn't been crossed yet. Market waiting for proof, not just trajectory.",
+       upd:"Narrative shifting at the margin — this is no longer a business losing money at scale, it's a business approaching profitability at scale. But the market needs the milestone, not the direction."},
+      {id:"hims-q4-23",label:"Q4 2023",date:"Feb 26, 2024",rev_est:235,rev_act:247,eps_est:-0.02,eps_act:0.01,
+       metrics:[{l:"Subscribers",v:"1.5M (+48%)"},{l:"EBITDA Margin",v:"8.4%"},{l:"2024 Guide",v:"$1.17-1.20B"}],
+       ah:"+31%",d1o:"~$13.50",d1c:"~$13.20",net:"~+28%",
+       pre:"Stock ~$9-10. EBITDA profitability expected but timing uncertain. Market still skeptical on durability. Weight loss verticals mentioned but not yet a financial contributor. Short interest still elevated ~25%.",
+       said:"Revenue $247M +47% YoY — beat. First GAAP net income ($1.2M). EBITDA $20.6M at 8.4% margin — first Q4 profitability milestone. 2024 guide $1.17-1.20B — massive raise. CEO flagged weight loss, derm, mental health each heading toward $100M+ in 2025.",
+       why:"+31% — largest single-day move since IPO. Two things happened simultaneously: (1) the lazy-short thesis was mathematically broken — a profitable, fast-growing business can't be shorted on 'no moat' grounds alone; (2) the 2024 guide implied a fundamentally different scale than bears modeled. Mass short covering.",
+       upd:"Phase change. The market re-classifies HIMS from 'promotional DTC brand' to 'profitable growth platform.' Consensus upgrades across the board. Multiple re-rates from 1x to 3-4x forward revenue. Bears forced to rebuild thesis from scratch."},
+      {id:"hims-q2-24",label:"Q2 2024",date:"Aug 2024",rev_est:295,rev_act:316,eps_est:0.07,eps_act:0.19,
+       metrics:[{l:"Subscribers",v:"1.9M (+47%)"},{l:"Weight Loss Rev",v:"$100M+ run rate"},{l:"GLP-1 Launch",v:"May 2024"}],
+       ah:"+20%",d1o:"~$22",d1c:"~$21",net:"~+18%",
+       pre:"Stock ~$16-18. GLP-1 launch in May 2024 is now in the numbers. Market beginning to price HIMS as a GLP-1 distribution play. Bulls see a massive TAM expansion. Bears scrambling — the original lazy-short thesis is dead.",
+       said:"Revenue $316M +50% YoY — beat. EPS $0.19 vs $0.07 est — massive beat. Weight loss vertical scaling fast with compounded semaglutide at $199/mo vs $1000+ branded. Subscribers growing to 1.9M. The GLP-1 inflection is real and in the numbers.",
+       why:"+20% AH. The GLP-1 opportunity is now quantified. HIMS is selling compounded semaglutide at a price point that branded pharma can't match during a supply shortage. Market reprices the total addressable market dramatically upward.",
+       upd:"Second re-rating — this time driven by a fundamentally new business line. GLP-1 transforms HIMS from a hair/ED/derm platform into a weight loss company. Bears now short on regulatory risk (FDA shortage classification) rather than business quality."},
+      {id:"hims-q3-24",label:"Q3 2024",date:"Nov 2024",rev_est:370,rev_act:402,eps_est:0.12,eps_act:0.45,
+       metrics:[{l:"Subscribers",v:"2.2M"},{l:"Weight Loss Rev",v:"~35% of total"},{l:"EBITDA Margin",v:"13%"}],
+       ah:"+30%",d1o:"~$28",d1c:"~$30",net:"~+28%",
+       pre:"Stock ~$22-25. GLP-1 momentum is the primary narrative. Short interest declining as bears capitulate. Bulls pricing HIMS as the dominant low-cost GLP-1 distribution platform with a structural advantage vs Novo Nordisk/Lilly on price and access.",
+       said:"Revenue $402M +52% YoY — significant beat. EPS $0.45 vs $0.12 est — blowout. Weight loss now ~35% of revenue and scaling. EBITDA 13% and expanding. Every metric ahead of expectations. Stock at ~$30 — near 52-week highs.",
+       why:"+30% AH. Peak GLP-1 optimism. The market is pricing HIMS as if compounded semaglutide is a permanent franchise. Short interest collapse + retail FOMO amplify the move. Stock approaches ATH territory.",
+       upd:"Third re-rating — this time based on GLP-1 revenue actually showing up at scale. Market consensus shifts to 'HIMS is a healthcare platform with structural pricing advantage over branded GLP-1.' Bears are now a small minority. The new risk is regulatory, not fundamental."},
+      {id:"hims-q4-24",label:"Q4 2024",date:"Feb 24, 2025",rev_est:455,rev_act:481,eps_est:0.18,eps_act:0.22,
+       metrics:[{l:"Subscribers",v:"2.2M (+45%)"},{l:"2025 Guide",v:"$2.3-2.4B"},{l:"FDA Event",v:"Shortage resolved Feb 21"}],
+       ah:"-19%",d1o:"~$38",d1c:"~$36",net:"~-45% from ATH",
+       pre:"Stock had hit ATH ~$66 on Jan/Feb 2025. Massive retail and institutional long positions. Market pricing compounded GLP-1 as a permanent revenue stream. Feb 21 — FDA announces semaglutide shortage RESOLVED → stock -26% that Friday before earnings.",
+       said:"Revenue $481M +95% YoY — beat. EPS $0.22 — beat. 2025 guide $2.3-2.4B — strong. But FDA shortage resolution changes the regulatory calculus: compounders can only mass-produce 'essentially copies' when shortage is active. Compounding window theoretically closing.",
+       why:"-19% AH despite beating everything. FDA had already taken -26% off two days earlier. Market re-pricing the GLP-1 runway from 'permanent' to 'temporary.' The question is no longer about revenue, it's about whether compounded semaglutide is legal in 6 months.",
+       upd:"Fourth re-rating — this time downward. GLP-1 revenue is real but the shelf life is now uncertain. Market shifts from pricing permanent franchise to pricing a time-limited arbitrage. Bull thesis narrows to: (1) personalization argument extends runway; (2) platform diversification absorbs GLP-1 loss; (3) branded partnership deals emerge."},
+      {id:"hims-q1-25",label:"Q1 2025",date:"May 7, 2025",rev_est:480,rev_act:535,eps_est:0.17,eps_act:0.24,
+       metrics:[{l:"Subscribers",v:"2.4M"},{l:"Short Interest",v:"~30%"},{l:"Personalized Sema",v:"Active"}],
+       ah:"-19%",d1o:"~$26",d1c:"~$22",net:"~-22%",
+       pre:"Stock ~$25-28. Short interest back up to 30%+ as bears re-engage on regulatory risk. Bull thesis is 'personalization argument extends compounding runway past shortage resolution.' FDA enforcement discretion window ongoing.",
+       said:"Revenue $535M — massive beat. EPS $0.24 beat. Subscriber growth strong. HIMS arguing personalized compounding (custom doses + additives) is legally distinct from 'essentially a copy.' Business growing faster than anyone modeled, even with regulatory overhang.",
+       why:"-19% AH despite enormous beat. Market doesn't believe the revenue is durable — each dollar of compounded semaglutide revenue is now discounted by the probability of FDA enforcement action shutting it down. Good quarter ≠ durable business.",
+       upd:"The market is now explicitly trading regulatory probability, not revenue. A 535M quarter that beats by 10%+ falls 19% because investors are pricing the binary: either compounding survives and HIMS is $40+, or it doesn't and HIMS is $10-12."},
+      {id:"hims-q3-25",label:"Q3 2025",date:"Nov 3, 2025",rev_est:550,rev_act:599,eps_est:0.14,eps_act:0.18,
+       metrics:[{l:"Subscribers",v:"2.47M (+21%)"},{l:"EBITDA Margin",v:"13%"},{l:"FDA Warning",v:"Sep 2025 letter"}],
+       ah:"+12%",d1o:"~$35",d1c:"~$34",net:"~+10%",
+       pre:"Stock ~$28-32. FDA warning letter issued Sep 2025 re: misleading GLP-1 ad claims. Market partially pricing enforcement risk. Some bears covering as company demonstrates business durability beyond GLP-1.",
+       said:"Revenue $599M +49% YoY — beat. EBITDA $78M 13% margin. Full year guided $2.335-2.355B. Subscriber growth moderating (+21% vs prior 45%+) as GLP-1 onboarding slows. Non-GLP-1 verticals (derm, mental health, sexual health) showing real scale.",
+       why:"+12% AH. Market begins to distinguish HIMS-as-GLP-1-play from HIMS-as-platform-with-GLP-1. Durability of hair loss, derm, mental health business provides a floor. Short covering as platform thesis gains credibility.",
+       upd:"Narrative maturing: HIMS is no longer a pure GLP-1 trade — it's a diversified consumer health platform where GLP-1 is an important but not existential revenue line. Bulls cite 96% multi-month subscriber rate as quality signal. Regulatory risk repriced from 'existential' to 'meaningful headwind.'"},
+      {id:"hims-q4-25",label:"Q4 2025",date:"Feb 23, 2026",rev_est:615,rev_act:638,eps_est:0.05,eps_act:0.08,
+       metrics:[{l:"FY2025 Rev",v:"$2.35B (+59%)"},{l:"2026 Guide",v:"$2.7-2.9B"},{l:"SEC Investigation",v:"Disclosed"}],
+       ah:"-9%",d1o:"~$19",d1c:"~$18",net:"~-12%",
+       pre:"Stock ~$18-20. Short interest record ~37%. Oral GLP-1 pill forced withdrawal Feb 2026 (FDA: unapproved copycat). Eucalyptus acquisition $1.15B announced. SEC investigation into compounded semaglutide disclosures disclosed. Market in maximum uncertainty mode.",
+       said:"Revenue $638M Q4, $2.35B FY2025 — beat. 2026 guide $2.7-2.9B — strong. Subscribers 2.5M. EBITDA $307-317M guided 2025. But SEC investigation is new negative. Oral pill withdrawal is another negative. CEO says weight business is 'durable even without compounded GLP-1.'",
+       why:"-9% despite beat. SEC investigation creates a new layer of legal risk on top of FDA regulatory risk. Market can't assign a probability to the SEC outcome. Two new risks in one month (oral pill + SEC) overwhelm a solid earnings beat.",
+       upd:"Maximum uncertainty. The stock is pricing in a significant probability of compounded semaglutide being shut down AND potential SEC enforcement. At ~$18, HIMS is trading at 2x forward revenue — pricing meaningful probability of GLP-1 loss. The debate is now: is the non-GLP-1 platform worth $10B standalone?"},
+      {id:"hims-q1-26",label:"Q1 2026",date:"May 2026",rev_est:620,rev_act:null,eps_est:0.10,eps_act:null,
+       metrics:[{l:"GLP-1 Status",v:"TBD post-truce"},{l:"Subscribers",v:"TBD"},{l:"SEC Update",v:"TBD"}],
+       ah:null,d1o:null,d1c:null,net:null,
+       pre:"Mar 2026: stock +40% on GLP-1 truce/deal news. Current ~$21. Short interest still elevated ~30%. Key question: did the March rally price in too much optimism or is the compounding runway genuinely extended?",
+       said:"Update after earnings",why:"Update after earnings",upd:"Update after earnings"}
+    ]},
+    NOW:{company:"ServiceNow Inc.",sector:"Enterprise AI / Workflow",exchange:"NYSE",quarters:[
+      {id:"now-q2-25",label:"Q2 2025",date:"Jul 23, 2025",rev_est:3150,rev_act:3215,eps_est:0.84,eps_act:0.90,
+       metrics:[{l:"Sub Rev",v:"$3.11B +22.5%"},{l:"cRPO",v:"$10.92B +24.5%"},{l:"Now Assist ACV",v:"Stepping up"}],
+       ah:"+6%",d1o:"~$920",d1c:"~$910",net:"~+5%",
+       pre:"Stock ~$850-900. Market pricing NOW as the clearest enterprise AI beneficiary — workflow automation is the highest-ROI AI use case and NOW owns the infrastructure layer. Expectations elevated. Now Assist (AI product) traction being watched closely for revenue contribution.",
+       said:"Rev $3.22B +21.5% CC — beat. cRPO $10.92B +24.5% CC — 200bps above guidance. Now Assist NNACV stepping up. Beat+raise on full-year guide to $12.78-12.80B. Federal business executed well despite macro noise. AI Control Tower gaining traction.",
+       why:"+6% AH. Clean beat-and-raise with cRPO acceleration as the forward signal. Market reads cRPO outperformance as AI demand pulling forward contract duration — the bulls' key thesis confirmed. Federal execution despite DOGE uncertainty removed a bear concern.",
+       upd:"AI narrative fully intact. NOW is executing the transition from workflow platform to AI platform credibly — Now Assist is generating real NNACV. The bar gets higher with each beat. Valuation premium sustained but increasingly priced for perfection."},
+      {id:"now-q3-25",label:"Q3 2025",date:"Oct 29, 2025",rev_est:3270,rev_act:3340,eps_est:0.87,eps_act:0.95,
+       metrics:[{l:"Sub Rev",v:"$3.30B +21.5%"},{l:"AI Control Tower",v:"4x seq. growth"},{l:"5-for-1 Split",v:"Dec 5, 2025"}],
+       ah:"+8%",d1o:"~$985",d1c:"~$970",net:"~+6%",
+       pre:"Stock ~$900-940. Peak AI platform optimism. Now Assist in every major pitch. Market consensus that NOW is the enterprise AI workflow winner. Full-year guide raised twice — street scrambling to catch up to the actual trajectory.",
+       said:"Sub rev $3.30B — beat. AI Control Tower NNACV grew 4x sequentially. ITSM/HR+ NNACV doubled QoQ. AI Control Tower in 16 of top 20 deals. 97% renewal rate. 5-for-1 stock split announced for Dec 5. Guidance raised again — full year now $12.78-12.80B.",
+       why:"+8% AH. AI product metrics were not just anecdotal — the 4x sequential AI Control Tower growth is quantifiable evidence of enterprise AI adoption translating into revenue. Stock split framing creates retail enthusiasm. Best pure AI execution quarter yet.",
+       upd:"Peak thesis confirmation quarter. The market now prices NOW as the primary enterprise AI infrastructure play. Multiple elevated to 15-18x forward revenue. The risk is no longer 'will AI work for NOW' — it's 'is the acceleration sustainable at scale or is this early-adopter pull-forward?'"},
+      {id:"now-q4-25",label:"Q4 2025",date:"Jan 28, 2026",rev_est:3530,rev_act:3570,eps_est:0.89,eps_act:0.92,
+       metrics:[{l:"Sub Rev",v:"$3.47B +21%"},{l:"$1M+ ACV deals",v:"244 (+40% YoY)"},{l:"$5B Buyback",v:"Authorized"}],
+       ah:"-11%",d1o:"~$126",d1c:"~$120",net:"~-13%",
+       pre:"Stock ~$130-135 (post-split). Bar extremely high after three consecutive beat-and-raise quarters. Federal headwinds (government shutdown impact), on-prem transition timing, and slight cRPO guide concern flagged by some analysts pre-earnings.",
+       said:"Rev $3.57B +20.7% — beat. EPS $0.92 vs $0.89 — beat. $5B buyback authorized. 2026 subscription guide $15.53-15.57B implies 19.5-20% growth. RaptorDB tripled NNACV. 244 $1M+ ACV deals +40% YoY. But cRPO guide slightly below elevated expectations. Federal business cited as headwind.",
+       why:"-11% AH despite beating both EPS and revenue. The 2026 guide (19.5-20%) was inline with prior trajectory but below the elevated expectations some bulls had modeled. Federal headwind acknowledged. Market at peak multiple has zero tolerance for anything below beat-and-raise. Classic 'sell the news at perfection-priced multiple.'",
+       upd:"Not a thesis break — a valuation adjustment. 19-20% growth for a $60B ARR business remains exceptional. But at 15-17x forward revenue the market was pricing 22%+ sustained. The re-rating is multiple compression, not fundamental deterioration. Next quarter (Apr 22) will test whether federal recovers and cRPO reaccelerates."},
+      {id:"now-q1-26",label:"Q1 2026",date:"Apr 22, 2026",rev_est:3650,rev_act:null,eps_est:0.80,eps_act:null,
+       metrics:[{l:"cRPO Growth",v:"TBD"},{l:"Federal Recovery",v:"TBD"},{l:"Now Assist ACV",v:"TBD"}],
+       ah:null,d1o:null,d1c:null,net:null,pre:"",said:"",why:"",upd:""}
+    ]},
+    TEAM:{company:"Atlassian Corporation",sector:"Developer Collaboration",exchange:"NASDAQ",quarters:[
+      {id:"team-q4-fy25",label:"Q4 FY25",date:"Aug 7, 2025",rev_est:1340,rev_act:1384,eps_est:0.85,eps_act:1.00,
+       metrics:[{l:"Cloud Rev",v:"$928M +26%"},{l:"RPO",v:"$3.1B +40%"},{l:"Non-GAAP Op Mgn",v:"27%"}],
+       ah:"+6%",d1o:"~$215",d1c:"~$208",net:"~+4%",
+       pre:"Stock ~$200-215. AI disruption narrative building but not yet dominant. Market acknowledging Rovo (TEAM's AI product) is real. Atlassian System of Work narrative gaining traction. 52-week high ~$242. Multiple elevated relative to growth rate.",
+       said:"Rev $1.38B +22% — beat. Cloud +26%. RPO +40% — strong forward indicator. Non-GAAP op margin 27% expanding. FY2025 guide raised to 18.5-19% growth. Rovo AI assistant showing engagement. Enterprise migration from on-prem to cloud accelerating.",
+       why:"+6% AH — healthy beat drove short covering. Cloud acceleration (+26%) and RPO strength offset concerns about macro. AI product (Rovo) framed as a growth driver not a threat. At $200+ the multiple was demanding but earnings cleared the bar.",
+       upd:"Positive quarter at an elevated multiple. Bears running the 'AI coding tools replace Jira' thesis but it's not showing up in cloud revenue yet. RPO +40% means next 12 months' revenue is well-covered. The structural AI concern is 2-3 years out and hasn't materialized."},
+      {id:"team-q1-fy26",label:"Q1 FY26",date:"Nov 6, 2025",rev_est:1380,rev_act:1433,eps_est:0.92,eps_act:1.10,
+       metrics:[{l:"Cloud Rev",v:"$998M +26%"},{l:"RPO",v:"$3.3B +42%"},{l:"DX Acquisition",v:"Closed Nov 10"}],
+       ah:"Flat/+2%",d1o:"~$165",d1c:"~$162",net:"~-5% vs pre",
+       pre:"Stock ~$160-175. AI disruption narrative now fully active. Cursor, GitHub Copilot, Claude Code all cited in bear thesis. Stock down ~30% from ATH. Shorts rebuilding positions on developer workflow disruption. The key question: will AI-native dev tools make Jira optional?",
+       said:"Rev $1.43B +21% — beat. Cloud +26% — consistent. RPO +42% — accelerating. DX acquisition closed (engineering intelligence). Non-GAAP margin expanding. But revenue growth decelerated slightly from 22% to 21%. AI adoption internally accelerating but not directly countering the displacement narrative.",
+       why:"Flat/+2% — small pop on the beat then fade. The good revenue numbers don't address whether AI-native development tools will restructure workflows in 2027-2028. Market not trading the quarter. Same FIG pattern: good quarter, structural question unanswered, price goes nowhere.",
+       upd:"Pattern established: beats don't re-rate. Stock needs evidence that Jira/Confluence are embedded in AI-native workflows, not just legacy workflows. DX acquisition (developer productivity measurement) is interesting but markets won't credit it until it shows up in net expansion."},
+      {id:"team-q2-fy26",label:"Q2 FY26",date:"Feb 5, 2026",rev_est:1540,rev_act:1586,eps_est:1.15,eps_act:1.22,
+       metrics:[{l:"Cloud Rev",v:"$1.07B +26%"},{l:"RPO",v:"$3.81B +44%"},{l:"Non-GAAP Op Mgn",v:"27%"}],
+       ah:"+4%",d1o:"~$70",d1c:"~$68",net:"~-2% vs pre",
+       pre:"Stock ~$65-70. Down ~70% from ATH $242. Multiple compressed to 4-5x forward revenue — near distressed territory for a 20%+ grower. The AI coding disruption thesis fully priced in. Bears dominant. Bull case requires evidence AI tools expand rather than contract developer seat demand.",
+       said:"Rev $1.59B +23% — beat by 3%. EPS $1.22 vs $1.15 (+6.5%). Cloud +26%. RPO $3.81B +44% — strong. Non-GAAP margin 27%. Revenue reaccelerated from 21% to 23% — a positive surprise. Rovo AI usage metrics disclosed for first time.",
+       why:"+4% initial AH then fade back to near flat. At distressed multiples, a beat has modest leverage upward. But the RPO acceleration and margin expansion provide no new information about whether AI agents will make Jira redundant in 2028. Pattern unchanged: good quarter, structural concern intact, fade follows the pop.",
+       upd:"The 70% decline from ATH has already done the re-rating. At 4-5x revenue the stock is not pricing in continued 20%+ growth — it's pricing in deceleration. The question for the next cycle: does AI actually show up in seat churn, or does Atlassian successfully embed itself into AI-native dev workflows through Rovo?"},
+      {id:"team-q3-fy26",label:"Q3 FY26",date:"Apr 30, 2026",rev_est:1650,rev_act:null,eps_est:1.33,eps_act:null,
+       metrics:[{l:"Cloud Rev",v:"TBD"},{l:"RPO Growth",v:"TBD"},{l:"Rovo AI Users",v:"TBD"}],
+       ah:null,d1o:null,d1c:null,net:null,pre:"",said:"",why:"",upd:""}
+    ]},
+    WDAY:{company:"Workday Inc.",sector:"Enterprise HR / Finance",exchange:"NASDAQ",quarters:[
+      {id:"wday-q1-fy26",label:"Q1 FY26",date:"May 22, 2025",rev_est:2200,rev_act:2240,eps_est:1.74,eps_act:2.23,
+       metrics:[{l:"Sub Rev Backlog",v:"$7.63B +15.6%"},{l:"Non-GAAP Op Mgn",v:"30.2%"},{l:"AI Features",v:"70+ live"}],
+       ah:"+5%",d1o:"~$242",d1c:"~$238",net:"~+3%",
+       pre:"Stock ~$230-240. Eschenbach's efficiency mandate showing in margins. AI Illuminate architecture announced — positioning WDAY as 'managing people, money, AND agents.' Bears worry AI reduces headcount at WDAY's customers, shrinking the seat expansion model. Stock down ~15% from prior highs.",
+       said:"Rev $2.24B +12.6% — beat. EPS $2.23 vs $1.74 est — large beat driven by margin discipline. Sub backlog +15.6%. HiredScore (AI hiring) integration measurably improving customer outcomes: 40% increase in internal applications, 70%+ boost in invoice processing. Eighth consecutive beat.",
+       why:"+5% AH. The EPS beat was significant (28% above estimate) driven by margin expansion. Investors rewarding the cost discipline pivot even as growth moderates. AI features showing ROI for customers — a counter to the bear case that AI reduces headcount expansion.",
+       upd:"Margin story working. The transition from pure growth to profitable growth is executing. But at 12-13% revenue growth the AI disruption bear case (fewer employees = fewer WDAY seats) is a slower-moving threat. Market treating WDAY as a quality compounder with manageable AI risk."},
+      {id:"wday-q2-fy26",label:"Q2 FY26",date:"Aug 21, 2025",rev_est:2310,rev_act:2348,eps_est:2.12,eps_act:2.21,
+       metrics:[{l:"Sub Rev",v:"$2.17B +14%"},{l:"Total Sub Backlog",v:"$25.37B +17.6%"},{l:"Non-GAAP Op Mgn",v:"29%"}],
+       ah:"+3%",d1o:"~$225",d1c:"~$222",net:"~+2%",
+       pre:"Stock ~$215-225. Macro headwinds: EMEA deal scrutiny elevated. Management flagged moderated customer headcount growth in prior call — this is the canary in the AI disruption coal mine. Bears watching for the first sign that headcount contraction hurts WDAY net expansion.",
+       said:"Rev $2.35B +12.6% — beat. EPS $2.21 vs $2.12 — beat. Sub backlog $25.37B +17.6% — strong. Non-GAAP margin 29% expanding. Closed two largest EMEA deals ever (both partner-sourced). 70+ AI features live. Extend platform new ACV +75%. Deal scrutiny persisted but execution held.",
+       why:"+3% small pop. The EMEA execution despite scrutiny was the key upside. However, growth deceleration (12% vs 16%+ in 2023-2024) combined with customer headcount growth moderating creates a ceiling on the upside. Market rewards execution but doesn't re-rate.",
+       upd:"Consistent execution in a decelerating environment. The AI narrative for WDAY is nuanced — AI tools inside Workday improve outcomes for existing customers (retention) while the macro concern is AI reducing the total addressable HR seat market. Neither trend is decisive yet."},
+      {id:"wday-q3-fy26",label:"Q3 FY26",date:"Nov 25, 2025",rev_est:2400,rev_act:2432,eps_est:2.28,eps_act:2.35,
+       metrics:[{l:"Sub Rev",v:"$2.24B +14.6%"},{l:"Non-GAAP Op Mgn",v:"28.5%"},{l:"FCF",v:"$550M"}],
+       ah:"+4%",d1o:"~$220",d1c:"~$218",net:"~+3%",
+       pre:"Stock ~$210-215. Three consecutive beats but stock has drifted down 17% over the year. Market skeptical that 12-13% growth justifies the multiple even with margin expansion. Aneel Bhusri (co-founder) rumored to be more involved again.",
+       said:"Rev $2.43B +12.6% — beat. Sub rev +14.6% — slight acceleration. Non-GAAP margin 28.5% — up significantly from 24% two years ago. FCF $550M healthy. AI agents (Workday Illuminate) now featured in enterprise pitches. Ninth consecutive beat.",
+       why:"+4% AH. Sub revenue reacceleration to 14.6% vs 12.6% total was the key signal — it implies the backlog quality is improving. Margin story intact. But at 5-6x forward revenue with 12-13% growth, the re-rating requires either acceleration or proof that agentic AI opens a new expansion vector.",
+       upd:"The margin thesis is working but not driving re-rating. WDAY is becoming a quality cash compounder rather than a growth story. The Bhusri return (announced Q4) suggests the board wants to reaccelerate growth — the agentic AI 'managing people, money, and agents' positioning is the vehicle for that attempt."},
+      {id:"wday-q4-fy26",label:"Q4 FY26",date:"Mar 2026",rev_est:2470,rev_act:2476,eps_est:2.32,eps_act:2.47,
+       metrics:[{l:"FY26 Rev",v:"$9.55B +13.1%"},{l:"FY27 Sub Guide",v:"$9.93-9.95B +12-13%"},{l:"CEO Change",v:"Bhusri returns"}],
+       ah:"+5%",d1o:"~$235",d1c:"~$228",net:"~+3%",
+       pre:"Stock ~$225. Aneel Bhusri returned as CEO mid-quarter. Signals the board wanted a reset. Eschenbach's efficiency mandate had worked on margins but growth not reaccelerating sufficiently. Market uncertain whether Bhusri return is bullish (visionary back) or bearish (Eschenbach pushed out).",
+       said:"Rev $2.48B — beat. EPS $2.47 vs $2.32 — beat. FY2026 total $9.55B +13.1%. FY2027 sub guide $9.93-9.95B implies 12-13% — no acceleration. Bhusri framing: 'we're prioritizing investment in agentic AI to capture a larger market.' Sovereign Cloud launched for EU data residency.",
+       why:"+5% AH — CEO return resolved uncertainty, EPS beat was meaningful, and the buyback commitment supported the stock. However FY2027 guide of 12-13% growth confirmed that the acceleration thesis is not in the near-term numbers — it's in the agentic AI bet Bhusri is making.",
+       upd:"Regime change. Eschenbach era: margin efficiency + consistent beats + modest growth. Bhusri era: agentic AI expansion play + willingness to invest ahead of revenue. The market will re-rate WDAY upward if Workday Agents (HR and Finance agents) show real NNACV in the next 2-3 quarters."}
+    ]},
+    ADBE:{company:"Adobe Inc.",sector:"Creative / Digital Experience",exchange:"NASDAQ",quarters:[
+      {id:"adbe-q2-fy25",label:"Q2 FY25",date:"Jun 13, 2025",rev_est:5820,rev_act:5870,eps_est:4.97,eps_act:5.06,
+       metrics:[{l:"Firefly Generations",v:"24B+ total"},{l:"Firefly App Subs",v:"~2x seq."},{l:"AI Direct ARR",v:">$250M target on track"}],
+       ah:"+5%",d1o:"~$275",d1c:"~$272",net:"~+4%",
+       pre:"Stock ~$260-275. Deeply depressed vs ATH ~$700. Market at peak AI disruption fear for creative software: Midjourney, Sora, Runway, DALL-E all cited as Creative Cloud substitutes. Bears argue AI reduces the need for professional design skills → seat compression. At 12x forward EPS — decade lows.",
+       said:"Rev $5.87B +11% — beat. EPS $5.06 vs $4.97 — beat. Firefly app paid subs nearly doubled sequentially. 24B+ total Firefly generations. Digital Experience +9% YoY. Raised full-year guide to $23.50-23.60B. Acrobat AI Assistant engagement growing. AI monetization credits model beginning to scale.",
+       why:"+5% AH. The Firefly metrics reframed the narrative from 'AI is threatening Adobe' to 'AI is Adobe's next monetization layer.' Paid Firefly subscriptions doubling sequentially is the first evidence that Adobe is capturing AI demand rather than being disrupted by it. Guidance raise validates the thesis.",
+       upd:"Narrative shift beginning. Bears focused on long-term seat compression; bulls focused on near-term AI credit monetization. The Firefly data supports the bull case that creative professionals use more Adobe, not less, when AI tools are embedded in existing workflows. $250M AI ARR target on track."},
+      {id:"adbe-q3-fy25",label:"Q3 FY25",date:"Sep 17, 2025",rev_est:5880,rev_act:5990,eps_est:5.10,eps_act:5.31,
+       metrics:[{l:"Digital Media ARR",v:"$18.5B +11%"},{l:"Firefly Traffic",v:"+30% QoQ"},{l:"AI Direct ARR",v:"On track >$250M"}],
+       ah:"+7%",d1o:"~$295",d1c:"~$292",net:"~+6%",
+       pre:"Stock ~$270-280. Post-Q2 optimism partially restored. Market partially recalibrated on Firefly monetization potential. But CEO Narayen retirement announced — creates management uncertainty. Bears still cite competitive pressure from native AI image tools.",
+       said:"Rev $5.99B +11% — beat. EPS $5.31 vs $5.10 — beat. Firefly traffic +30% QoQ. Digital Experience subscription +11%. Guidance raised again: FY25 now $23.65-23.70B. AI credits model showing increasing attach in enterprise deals. $250M AI direct ARR target confirmed on track.",
+       why:"+7% AH. Two consecutive guide-raises on AI monetization removes the bear case that Firefly is a defensive tool rather than a revenue driver. The 30% traffic growth sequentially shows user engagement compounding. CEO succession announced with 'AI-native leader' framing — market reads as transition risk but manageable.",
+       upd:"Second consecutive AI monetization validation quarter. The pattern: each quarter the bull case gets a little more quantified (Firefly subs, traffic, AI ARR) and the bear case (seat compression) remains a future possibility rather than a current reality. Multiple re-rating from 12x to 15x forward earnings."},
+      {id:"adbe-q4-fy25",label:"Q4 FY25",date:"Dec 10, 2025",rev_est:6100,rev_act:6190,eps_est:5.40,eps_act:5.50,
+       metrics:[{l:"FY25 Rev",v:"$23.8B +11%"},{l:"Total ARR",v:"$25.2B +11.5%"},{l:"FCF",v:">$10B FY25"}],
+       ah:"+4%",d1o:"~$315",d1c:"~$308",net:"~+3%",
+       pre:"Stock ~$300-310. Three consecutive guide-raises. AI monetization narrative well-established. CEO succession still TBD. Bears diminished but not gone — the long-term seat compression thesis requires 2027+ data to test. Multiple recovering toward 16-17x forward EPS.",
+       said:"Rev $6.19B +10% — beat. EPS $5.50 — beat. Record FY2025 $23.8B. Total ARR $25.2B +11.5%. FCF >$10B for FY25 — record. FY2026 ARR growth targeted >10%. Narayen frames Adobe's 'growing importance in the global AI ecosystem.' AI credit model now a recognized revenue line.",
+       why:"+4% AH. Record results validate the full-year narrative. However the reaction is modest because three beats have already partially re-rated the stock. The new baseline is 10-11% growth with AI credits as the incremental driver — not a re-rating catalyst but a confirmation one.",
+       upd:"Full-year narrative complete. Adobe has successfully reframed from 'AI disruption victim' to 'AI monetization beneficiary' in the market's view. The next test: does the CEO transition go cleanly? And does 10-11% growth accelerate toward 13-14% as AI credits scale — or does it decelerate as seat saturation kicks in?"},
+      {id:"adbe-q1-fy26",label:"Q1 FY26",date:"Mar 2026",rev_est:6300,rev_act:null,eps_est:5.60,eps_act:null,
+       metrics:[{l:"AI Credit Rev",v:"TBD"},{l:"New CEO",v:"TBD"},{l:"FY26 Guide",v:"TBD"}],
+       ah:null,d1o:null,d1c:null,net:null,
+       pre:"CEO successor named/TBD. Stock ~$290-310. Key question: does new leadership confirm or change the AI monetization roadmap?",
+       said:"Update after earnings",why:"Update after earnings",upd:"Update after earnings"}
+    ]},
+    DOCS:{company:"Doximity Inc.",sector:"Healthcare IT",exchange:"NYSE",quarters:[
+      {id:"docs-q3-fy25",label:"Q3 FY25",date:"Feb 6, 2025",rev_est:152.8,rev_act:168.6,eps_est:0.29,eps_act:0.45,
+       metrics:[{l:"NRR (TTM)",v:"~117%"},{l:"EBITDA Margin",v:"60.5%"},{l:"AI Users",v:"610K"}],
+       ah:"+37%",d1o:"~$71",d1c:"~$68",net:"~+30%",
+       pre:"Stock ~$52. Street modeling ~$153M. Pharma ad spend recovery expected but not priced. AI engagement absent from consensus models.",
+       said:"Revenue $168.6M — beat by $15.8M (+10.4%). EPS $0.45 vs $0.29 (+55%). AI tools up 60% QoQ. 610K unique providers.",
+       why:"+37% AH. Pure consensus-was-wrong reaction. Analysts rebuilt models immediately. Market re-classified DOCS as AI beneficiary.",
+       upd:"Street reprices sharply. Models rebuilt at 20-25% growth. Multiple expands as DOCS re-classified from slow pharma-ad platform to AI workflow leader."},
+      {id:"docs-q4-fy25",label:"Q4 FY25",date:"May 15, 2025",rev_est:134.0,rev_act:138.3,eps_est:0.31,eps_act:0.38,
+       metrics:[{l:"NRR (TTM)",v:"~116% ↓"},{l:"EBITDA Margin",v:"50.4%"},{l:"AI Users",v:"580K+"}],
+       ah:"+5%",d1o:"~$78",d1c:"~$75",net:"~+4%",
+       pre:"Stock ~$75-80 near ATH. Post-surge consensus aggressive. High-conviction longs built. Bar significantly higher.",
+       said:"Revenue $138.3M vs $134M — beat but only +3.2%. EBITDA 50.4% (seasonal). Growth decelerated to 17% YoY. NRR ticked down 117%→116%.",
+       why:"Small pop ~+5%. Relief growth didn't collapse but enthusiasm muted. At elevated multiple the bar was higher.",
+       upd:"Expectations calibrated closer to reality. NRR tick-down beginning to register. Market gives benefit of doubt for one quarter."},
+      {id:"docs-q1-fy26",label:"Q1 FY26",date:"Aug 7, 2025",rev_est:143.4,rev_act:145.9,eps_est:0.34,eps_act:0.40,
+       metrics:[{l:"NRR (TTM)",v:"~115% ↓"},{l:"EBITDA Margin",v:"52%"},{l:"AI Users",v:"630K+"}],
+       ah:"Flat",d1o:"~$71",d1c:"~$70",net:"~0%",
+       pre:"Stock ~$70. Expectations normalized. Conservative guidance. Neutral market mood.",
+       said:"Revenue $145.9M vs $143.4M — small beat (+1.7%). AI suite up 5x YoY. Growth slowed to 15% YoY from 25% at peak.",
+       why:"Flat to slightly down. Market neither positively nor negatively surprised. Growth trend pointing wrong direction.",
+       upd:"NRR declining (~115%). Growth 25%→17%→15%. Market still patient but in show-me mode."},
+      {id:"docs-q2-fy26",label:"Q2 FY26",date:"Nov 6, 2025",rev_est:157.1,rev_act:168.5,eps_est:0.38,eps_act:0.45,
+       metrics:[{l:"NRR (TTM)",v:"~113% ↓"},{l:"EBITDA Margin",v:"59%"},{l:"Op Inc Beat",v:"+16%"}],
+       ah:"-12%",d1o:"~$58",d1c:"~$50",net:"~-25%",
+       pre:"Stock ~$65. Multiple still elevated (~50x fwd P/E). Bar high relative to where fundamentals are trending.",
+       said:"Revenue $168.5M vs $157.1M — solid beat (+7.2%). EPS $0.45 vs $0.38 (+18.7%). But growth inflated by easy comps. NRR still declining.",
+       why:"Fell -12% AH, ultimately -25% from pre-earnings. A 7% beat at 50x P/E isn't enough when every thesis metric is heading the wrong way.",
+       upd:"Critical inflection. Market signals it has priced out the AI re-rating. Bears in control."},
+      {id:"docs-q3-fy26",label:"Q3 FY26",date:"Feb 5, 2026",rev_est:178.0,rev_act:185.1,eps_est:0.45,eps_act:0.46,
+       metrics:[{l:"NRR (TTM)",v:"112% ↓↓"},{l:"EBITDA Margin",v:"60%"},{l:"Q4 Guide",v:"$143M (4%)"}],
+       ah:"-5% AH → -25% D+1",d1o:"~$35",d1c:"~$25",net:"~-28%",
+       pre:"Stock ~$37 — down 55% from ATH. Sellside still had buy ratings. Market partially discounted bad news but hadn't priced a guidance cut.",
+       said:"Revenue $185.1M — beat. EPS $0.46 vs $0.45 — beat. But Q4 guidance: $143-144M (4% growth) vs implied ~$175M. MFN agreements disrupted pharma selling season.",
+       why:"-5% initial AH, then -25% to -28% next trading day. Analysts slashed targets: Goldman $46→$34, BMO $45→$25, Evercore $55→$30.",
+       upd:"Expectation lifecycle complete. NRR at 112% and declining. Key question: cyclical MFN disruption or structural pharma budget contraction?"},
+      {id:"docs-q4-fy26",label:"Q4 FY26",date:"May 2026",rev_est:143,rev_act:null,eps_est:0.28,eps_act:null,
+       metrics:[{l:"NRR (TTM)",v:"TBD"},{l:"EBITDA Margin",v:"TBD"},{l:"Pharma Bookings",v:"TBD"}],
+       ah:null,d1o:null,d1c:null,net:null,pre:"",said:"",why:"",upd:""}
+    ]}
+  }
+};
+
+const SK="eq_v3",AK="eq_api";
+const load=()=>{try{const d=localStorage.getItem(SK);return d?JSON.parse(d):null}catch{return null}};
+const save=d=>{try{localStorage.setItem(SK,JSON.stringify(d))}catch{}};
+const getKey=()=>localStorage.getItem(AK)||"";
+const saveKey=k=>localStorage.setItem(AK,k);
+
+const bm=(e,a)=>{if(e==null||a==null)return null;const d=a-e,p=((d/Math.abs(e))*100).toFixed(1);return{diff:d.toFixed(1),pct:p,pos:d>=0}};
+const rxnCls=v=>{if(!v)return"rxn-neu";const s=String(v);if(s.includes("+"))return"rxn-pos";if(s.startsWith("-")||s.includes("–"))return"rxn-neg";return"rxn-neu"};
+
+const Chip=({l,v,beat})=>(
+  <div className={beat===true?"chip ok":beat===false?"chip no":"chip"}>
+    <div className="cl">{l}</div>
+    <div className="cv">{v||"—"}</div>
+  </div>
+);
+
+const NoteBlock=({label,text})=>text?(
+  <div className="note-blk">
+    <div className="note-lbl">{label}</div>
+    <div className="note-txt">{text}</div>
+  </div>
+):null;
+
+const Modal=({title,onClose,children})=>(
+  <div className="overlay" onClick={onClose}>
+    <div className="sheet" onClick={e=>e.stopPropagation()}>
+      <div className="sheet-hdr">
+        <span style={{fontWeight:700,fontSize:15,color:"#fff"}}>{title}</span>
+        <button className="sheet-close" onClick={onClose}>×</button>
+      </div>
+      <div className="sheet-body">{children}</div>
+    </div>
+  </div>
+);
+
+const Field=({label,k,ph,s,ss,type="text",optional})=>(
+  <div className="field">
+    <label className="lbl">{label}{optional&&<span style={{color:"var(--s5)",marginLeft:4}}>optional</span>}</label>
+    <input type={type} value={s[k]||""} onChange={e=>ss(x=>({...x,[k]:e.target.value}))} placeholder={ph} className="inp"/>
+  </div>
+);
+
+const AreaField=({label,k,ph,s,ss,optional})=>(
+  <div className="field">
+    <label className="lbl">{label}{optional&&<span style={{color:"var(--s5)",marginLeft:4}}>optional</span>}</label>
+    <textarea value={s[k]||""} onChange={e=>ss(x=>({...x,[k]:e.target.value}))} placeholder={ph} rows={2} className="inp area"/>
+  </div>
+);
+
+function App(){
+  const [data,setData]=useState(null);
+  const [view,setView]=useState("dash");
+  const [sym,setSym]=useState(null);
+  const [open,setOpen]=useState({});
+  const [editing,setEditing]=useState(null);
+  const [draft,setDraft]=useState({});
+  const [thesisEdit,setThesisEdit]=useState(false);
+  const [thesisDraft,setThesisDraft]=useState("");
+  const [live,setLive]=useState({});
+  const [busy,setBusy]=useState(null);
+  const [modal,setModal]=useState(null);
+  const [apiKey,setApiKey]=useState(getKey);
+  const [newT,setNewT]=useState({symbol:"",company:"",sector:"",exchange:"NASDAQ"});
+  const [newQ,setNewQ]=useState({});
+
+  useEffect(()=>{setData(load()||SEED)},[]);
+
+  const persist=d=>{setData(d);save(d)};
+  const toggle=id=>setOpen(o=>({...o,[id]:!o[id]}));
+  const startEdit=q=>{setEditing(q.id);setDraft({pre:q.pre||"",said:q.said||"",why:q.why||"",upd:q.upd||""})};
+  const saveEdit=(ticker,qid)=>{
+    const d=JSON.parse(JSON.stringify(data));
+    const i=d.tickers[ticker].quarters.findIndex(q=>q.id===qid);
+    d.tickers[ticker].quarters[i]={...d.tickers[ticker].quarters[i],...draft};
+    persist(d);setEditing(null);
+  };
+  const saveThesis=(ticker)=>{
+    const d=JSON.parse(JSON.stringify(data));
+    d.tickers[ticker].thesis=thesisDraft;
+    persist(d);setThesisEdit(false);
+  };
+
+  const doRefresh=async(ticker)=>{
+    if(!apiKey.trim()){setModal("settings");return}
+    setBusy(ticker);
+    try{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":apiKey.trim(),
+          "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",max_tokens:800,
+          tools:[{type:"web_search_20250305",name:"web_search"}],
+          system:"Return ONLY valid JSON, no markdown, no explanation.",
+          messages:[{role:"user",content:
+            `Search for current stock data for ${ticker}. Return ONLY this JSON:\n{"price":"24.50","change":"-1.2%","high52":"76.51","low52":"23.53","mktcap":"4.2B","headlines":["headline 1","headline 2","headline 3"]}`
+          }]
+        })
+      });
+      const r=await res.json();
+      const txt=(r.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+      const parsed=JSON.parse(txt.replace(/```[a-z]*|```/g,"").trim());
+      setLive(l=>({...l,[ticker]:{...parsed,at:new Date().toLocaleTimeString()}}));
+    }catch{
+      setLive(l=>({...l,[ticker]:{error:"Refresh failed — check API key in ⚙ Settings",at:new Date().toLocaleTimeString()}}));
+    }finally{setBusy(null)}
+  };
+
+  const addTicker=()=>{
+    const s=newT.symbol.toUpperCase().trim();if(!s)return;
+    persist({...data,tickerOrder:[...data.tickerOrder,s],
+      tickers:{...data.tickers,[s]:{company:newT.company,sector:newT.sector,exchange:newT.exchange,quarters:[]}}});
+    setModal(null);setNewT({symbol:"",company:"",sector:"",exchange:"NASDAQ"});
+  };
+
+  const addQuarter=()=>{
+    if(!newQ.label)return;
+    const q={id:`${sym}-${Date.now()}`,label:newQ.label,date:newQ.date||"",
+      rev_est:newQ.rev_est?+newQ.rev_est:null,rev_act:newQ.rev_act?+newQ.rev_act:null,
+      eps_est:newQ.eps_est?+newQ.eps_est:null,eps_act:newQ.eps_act?+newQ.eps_act:null,
+      metrics:[{l:newQ.m1l||"Metric 1",v:newQ.m1v||""},{l:newQ.m2l||"Metric 2",v:newQ.m2v||""},{l:newQ.m3l||"Metric 3",v:newQ.m3v||""}],
+      ah:newQ.ah||null,d1o:newQ.d1o||null,d1c:newQ.d1c||null,net:newQ.net||null,
+      pre:newQ.pre||"",said:newQ.said||"",why:newQ.why||"",upd:newQ.upd||""};
+    const d=JSON.parse(JSON.stringify(data));
+    d.tickers[sym].quarters.push(q);
+    persist(d);setModal(null);setNewQ({});
+  };
+
+  if(!data)return(
+    <div className="page" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <span style={{color:"var(--nv)",fontFamily:"ui-monospace,monospace",fontSize:13,letterSpacing:".2em"}} className="pulse">LOADING...</span>
+    </div>
+  );
+
+  const ticker=sym?data.tickers[sym]:null;
+  const ld=live[sym]||{};
+
+  /* DASHBOARD */
+  if(view==="dash")return(
+    <div className="page">
+      <div className="top-bar safe-top safe-x">
+        <div className="wrap row sb" style={{paddingTop:12,paddingBottom:12}}>
+          <div>
+            <div className="brand-label">EQUITY RESEARCH</div>
+            <div className="brand-title">Coverage</div>
+          </div>
+          <div className="row gap" style={{alignItems:"flex-end",paddingBottom:2}}>
+            <button className="btn-icon" onClick={()=>setModal("settings")}>⚙</button>
+            <button className="btn ac sm" onClick={()=>setModal("ticker")}>+ Ticker</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="wrap safe-x safe-bot" style={{paddingTop:16}}>
+        <div className="stack">
+          {data.tickerOrder.map(s=>{
+            const t=data.tickers[s];if(!t)return null;
+            const done=t.quarters.filter(q=>q.rev_act!=null);
+            const last=done[done.length-1];
+            return(
+              <button key={s} className="ticker-card fade" onClick={()=>{setSym(s);setView("ticker")}}>
+                <div className="row sb mb2">
+                  <div>
+                    <div style={{fontSize:20,fontWeight:700,color:"var(--navy)"}}>{s}</div>
+                    <div style={{fontSize:12,color:"var(--s4)",marginTop:2}}>{t.company}</div>
+                  </div>
+                  {last?.ah&&<span className={`rxn-tag ${rxnCls(last.ah)}`}>{last.ah}</span>}
+                </div>
+                <div className="row gap" style={{flexWrap:"wrap"}}>
+                  <span style={{fontSize:11,background:"var(--pl2)",color:"var(--mid)",padding:"3px 8px",borderRadius:6,border:"1px solid var(--pl)"}}>{t.sector}</span>
+                  <span style={{fontSize:11,color:"var(--s4)"}}>{t.exchange}</span>
+                  <span style={{fontSize:11,color:"var(--s5)",marginLeft:"auto"}}>{t.quarters.length} quarters</span>
+                </div>
+                {last&&<div style={{fontSize:11,color:"var(--s5)",marginTop:8}}>Latest: {last.label} · {last.date}</div>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {modal==="ticker"&&(
+        <Modal title="Add Ticker" onClose={()=>setModal(null)}>
+          <Field label="Ticker Symbol" k="symbol" ph="RKLB" s={newT} ss={setNewT}/>
+          <Field label="Company Name" k="company" ph="Rocket Lab Corp." s={newT} ss={setNewT}/>
+          <Field label="Sector" k="sector" ph="Aerospace" s={newT} ss={setNewT}/>
+          <Field label="Exchange" k="exchange" ph="NASDAQ" s={newT} ss={setNewT}/>
+          <div className="row gap mt4">
+            <button className="btn ac f1" onClick={addTicker}>Add</button>
+            <button className="btn ghost f1" onClick={()=>setModal(null)}>Cancel</button>
+          </div>
+        </Modal>
+      )}
+
+      {modal==="settings"&&(
+        <Modal title="Settings" onClose={()=>setModal(null)}>
+          <p style={{fontSize:12,color:"var(--s4)",lineHeight:1.6,marginBottom:14}}>
+            Your Anthropic API key powers live price and news refresh. Stored only on this device.
+            Get your key at console.anthropic.com.
+          </p>
+          <div className="field">
+            <label className="lbl">Anthropic API Key</label>
+            <input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="sk-ant-..." className="inp"/>
+          </div>
+          <div className="row gap mt3">
+            <button className="btn ac f1" onClick={()=>{saveKey(apiKey);setModal(null)}}>Save</button>
+            <button className="btn ghost f1" onClick={()=>setModal(null)}>Cancel</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+
+  /* TICKER VIEW */
+  const quarters=[...(ticker?.quarters||[])].reverse();
+  return(
+    <div className="page">
+      <div className="top-bar sticky safe-top safe-x">
+        <div className="wrap" style={{paddingTop:10,paddingBottom:10}}>
+          <div className="row sb mb2">
+            <div className="row">
+              <button className="bc-back" onClick={()=>setView("dash")}>← Coverage</button>
+              <span className="bc-sep">/</span>
+              <span className="bc-sym">{sym}</span>
+            </div>
+            <div className="row gap">
+              <button className="btn-refresh" onClick={()=>doRefresh(sym)} disabled={busy===sym}>
+                {busy===sym?"...":"⟳ Refresh"}
+              </button>
+              <button className="btn ac sm" style={{fontWeight:700}} onClick={()=>{setNewQ({});setModal("quarter")}}>+ Quarter</button>
+            </div>
+          </div>
+          <div className="row sb">
+            <div>
+              <div style={{fontWeight:700,color:"var(--navy)"}}>{ticker.company}</div>
+              <div style={{fontSize:12,color:"var(--s4)"}}>{ticker.exchange} · {ticker.sector}</div>
+            </div>
+            {ld.price&&!ld.error&&(
+              <div style={{textAlign:"right"}}>
+                <div className="row base">
+                  <span className="live-price">${ld.price}</span>
+                  <span className={ld.change?.includes("-")?"chg-neg":"chg-pos"}>{ld.change}</span>
+                </div>
+                {ld.high52&&<div className="live-sub">52w ${ld.low52}–${ld.high52}</div>}
+                <div className="live-sub">{ld.at}</div>
+              </div>
+            )}
+            {ld.error&&<div style={{fontSize:11,color:"var(--no-t)",textAlign:"right",maxWidth:180}}>{ld.error}</div>}
+          </div>
+        </div>
+      </div>
+
+      <div className="wrap safe-x safe-bot" style={{paddingTop:12}}>
+        <div className="stack">
+
+          {/* Thesis box */}
+          <div className="thesis-card">
+            <div className="thesis-head">
+              <span className="thesis-label">Investment Thesis</span>
+              {!thesisEdit&&(
+                <button className="btn-edit" style={{marginTop:0}}
+                  onClick={()=>{setThesisDraft(ticker.thesis||"");setThesisEdit(true)}}>
+                  ✏ Edit
+                </button>
+              )}
+            </div>
+            {thesisEdit?(
+              <div>
+                <textarea className="thesis-area"
+                  value={thesisDraft}
+                  onChange={e=>setThesisDraft(e.target.value)}
+                  placeholder="Write your full thesis here — root need, key variables to watch, bull/bear cases, valuation framework, what would change your view..."
+                />
+                <div className="row gap" style={{padding:"0 14px 14px"}}>
+                  <button className="btn ac sm" style={{fontWeight:700}} onClick={()=>saveThesis(sym)}>Save</button>
+                  <button className="btn ghost sm" onClick={()=>setThesisEdit(false)}>Cancel</button>
+                </div>
+              </div>
+            ):(
+              <div className={`thesis-body${!ticker.thesis?" empty":""}`}>
+                {ticker.thesis||"No thesis yet — tap Edit to add your research and investment view."}
+              </div>
+            )}
+          </div>
+          {ld.headlines&&(
+            <div className="news-card fade">
+              <div className="news-lbl">Recent News</div>
+              {ld.headlines.map((h,i)=><div key={i} className="news-item">{h}</div>)}
+            </div>
+          )}
+
+          {quarters.map(q=>{
+            const pending=q.rev_act==null;
+            const isOpen=open[q.id];
+            const isEdit=editing===q.id;
+            const revBM=bm(q.rev_est,q.rev_act);
+            const epsBM=bm(q.eps_est,q.eps_act);
+            const hasNotes=q.pre||q.said||q.why||q.upd;
+
+            return(
+              <div key={q.id} className={`card${pending?" upcoming":""} fade`}>
+                <div className={`card-head${pending?" upcoming":""}`}>
+                  <div className="row gap">
+                    <span style={{fontWeight:700,color:pending?"var(--nv)":"var(--navy)"}}>{q.label}</span>
+                    <span style={{fontSize:12,color:"var(--s4)"}}>{q.date}</span>
+                    {pending&&<span style={{fontSize:11,background:"var(--pl2)",color:"var(--mid)",border:"1px solid var(--pl)",padding:"2px 8px",borderRadius:999}}>Upcoming</span>}
+                  </div>
+                  {q.ah&&<span className={`rxn-tag ${rxnCls(q.ah)}`}>{q.ah}</span>}
+                </div>
+
+                <div className="card-body">
+                  <div className="grid2 mb2">
+                    <Chip l="Rev Est ($M)" v={q.rev_est?`$${q.rev_est}M`:null}/>
+                    <Chip l="Rev Actual ($M)" v={q.rev_act?`$${q.rev_act}M`:null}/>
+                    <Chip l="Rev Beat/Miss"
+                      v={revBM?`${revBM.pos?"+":""}${revBM.diff}M (${revBM.pos?"+":""}${revBM.pct}%)`:null}
+                      beat={revBM?revBM.pos:null}/>
+                    <Chip l="EPS Beat/Miss"
+                      v={epsBM?`${epsBM.pos?"+":""}$${epsBM.diff} (${epsBM.pos?"+":""}${epsBM.pct}%)`:null}
+                      beat={epsBM?epsBM.pos:null}/>
+                  </div>
+
+                  <div className="grid3 mb2">
+                    {q.metrics.map((m,i)=><Chip key={i} l={m.l} v={m.v}/>)}
+                  </div>
+
+                  {!pending&&(
+                    <div className="grid2 mb2">
+                      {[["AH Reaction",q.ah,true],["D+1 Open",q.d1o,false],["D+1 Close",q.d1c,false],["48h Net",q.net,true]].map(([lbl,val,col])=>{
+                        const rc=col&&val?rxnCls(val):"";
+                        const cls=rc==="rxn-pos"?"chip ok":rc==="rxn-neg"?"chip no":"chip";
+                        const style=rc==="rxn-neu"?{background:"var(--pl2)",borderColor:"var(--pl)"}:{};
+                        return(
+                          <div key={lbl} className={cls} style={style}>
+                            <div className="cl">{lbl}</div>
+                            <div className="cv" style={(!col||!val)?{color:"#94a3b8"}:{}}>{val||"—"}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <button className="btn-expand" onClick={()=>toggle(q.id)}>
+                    <span>{isOpen?"▲":"▼"}</span>
+                    <span>{isOpen?"Hide Notes":hasNotes?"View Notes":"Add Notes"}</span>
+                  </button>
+                </div>
+
+                {isOpen&&(
+                  <div className="notes-area fade">
+                    {isEdit?(
+                      <div className="stack8">
+                        {[["pre","Pre-Earnings Narrative"],["said","What the Quarter Said"],["why","Why Market Reacted"],["upd","Thesis Update"]].map(([k,lbl])=>(
+                          <div key={k}>
+                            <label className="lbl" style={{color:"var(--nv)"}}>{lbl}</label>
+                            <textarea value={draft[k]||""} onChange={e=>setDraft(d=>({...d,[k]:e.target.value}))} rows={3}
+                              className="edit-area" style={{fontSize:14}}/>
+                          </div>
+                        ))}
+                        <div className="row gap pt2">
+                          <button className="btn ac sm" style={{fontWeight:700}} onClick={()=>saveEdit(sym,q.id)}>Save</button>
+                          <button className="btn ghost sm" onClick={()=>setEditing(null)}>Cancel</button>
+                        </div>
+                      </div>
+                    ):(
+                      <div>
+                        <NoteBlock label="Pre-Earnings Narrative" text={q.pre}/>
+                        <NoteBlock label="What the Quarter Said"   text={q.said}/>
+                        <NoteBlock label="Why Market Reacted"      text={q.why}/>
+                        <NoteBlock label="Thesis Update"           text={q.upd}/>
+                        {!hasNotes&&<div style={{fontSize:12,color:"var(--s5)",fontStyle:"italic"}}>No notes yet.</div>}
+                        <button className="btn-edit" onClick={()=>startEdit(q)}>✏ Edit Notes</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {modal==="quarter"&&(
+        <Modal title={`Add Quarter — ${sym}`} onClose={()=>setModal(null)}>
+          <Field label="Quarter Label *" k="label" ph="Q1 FY27" s={newQ} ss={setNewQ}/>
+          <Field label="Date" k="date" ph="May 2026" s={newQ} ss={setNewQ}/>
+          <div className="grid2">
+            {[["Rev Est ($M)","rev_est","150"],["Rev Actual","rev_act",""],
+              ["EPS Est","eps_est","0.30"],["EPS Actual","eps_act",""],
+              ["AH Reaction","ah","+5%"],["48h Net","net","+3%"],
+              ["D+1 Open","d1o","~$30"],["D+1 Close","d1c","~$29"],
+              ["Metric 1 Label","m1l","NRR"],["Metric 1 Value","m1v","115%"],
+              ["Metric 2 Label","m2l","EBITDA Mgn"],["Metric 2 Value","m2v","55%"],
+              ["Metric 3 Label","m3l","Metric 3"],["Metric 3 Value","m3v",""],
+            ].map(([lbl,k,ph])=>(
+              <div key={k} className="field">
+                <label className="lbl">{lbl}</label>
+                <input value={newQ[k]||""} onChange={e=>setNewQ(q=>({...q,[k]:e.target.value}))} placeholder={ph} className="inp"/>
+              </div>
+            ))}
+          </div>
+          <AreaField label="Pre-Earnings Narrative" k="pre" ph="Can fill in later..." s={newQ} ss={setNewQ} optional/>
+          <AreaField label="What the Quarter Said"   k="said" ph="Can fill in later..." s={newQ} ss={setNewQ} optional/>
+          <AreaField label="Why Market Reacted"      k="why" ph="Can fill in later..." s={newQ} ss={setNewQ} optional/>
+          <AreaField label="Thesis Update"           k="upd" ph="Can fill in later..." s={newQ} ss={setNewQ} optional/>
+          <div className="row gap mt4">
+            <button className="btn ac f1" style={{fontWeight:700}} onClick={addQuarter}>Add Quarter</button>
+            <button className="btn ghost f1" onClick={()=>setModal(null)}>Cancel</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
